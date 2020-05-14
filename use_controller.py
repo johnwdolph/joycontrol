@@ -29,6 +29,9 @@ for device in devices:
 	elif device.name.find('Sony Computer Entertainment Wireless') != -1 and device.name.find('Motion')== -1 and device.name.find('Touch')== -1 or device.name.find('Wireless Controller')!=-1 and device.name.find('Motion')== -1 and device.name.find('Touch')== -1:
 		controllerName = 'PS4_controller'
 		deviceID = device.path
+	elif device.name.find('Xbox 360') != -1 :
+		controllerName = 'Xbox360_controller'
+		deviceID = device.path
 
 gamepad = InputDevice(deviceID)
 
@@ -60,6 +63,9 @@ if (controllerName == 'PS3_controller'):
 
 	homeBtn = 316
 
+	ABS_scale = 255
+	ABS_translate = 0
+
 elif (controllerName == 'PS4_controller'):
 	print('ps4 configuration loaded')
 	#button codes
@@ -88,15 +94,53 @@ elif (controllerName == 'PS4_controller'):
 
 	homeBtn = 316
 
+	ABS_scale = 255
+	ABS_translate = 0
+
+elif (controllerName == 'Xbox360_controller'):
+	print('xbox360 configuration loaded')
+	#button codes
+	aBtn = 305
+	bBtn = 304
+	xBtn = 308
+	yBtn = 307
+
+	up = 999999
+	down = 999999
+	left = 999999
+	right = 999999
+
+	d_pad = 'ps4'
+
+	start = 315
+	select = 314
+
+	l1Trig = 310
+	r1Trig = 311
+	l2Trig = 99999
+	r2Trig = 99999
+
+	lBtn = 317
+	rBtn = 318
+
+	homeBtn = 316
+	
+	ABS_scale = 128*255*2
+	ABS_translate = 32768
+
+
 
 logger = logging.getLogger(__name__)
-
 
 def lerp(a, b, percentage):
     return (percentage * a) + ((1 - percentage) * b)
 
 
 async def controller_inputs(controller_state):
+
+	button_zl_pressed = False
+	button_zr_pressed = False
+	
 
 	stickL = controller_state.l_stick_state
 	calibrationL = stickL.get_calibration()
@@ -190,30 +234,50 @@ async def controller_inputs(controller_state):
 		elif event.type==ecodes.EV_ABS:
 				if event.code == 1:
 					# vertical L
-					percentLv = event.value/255
+					percentLv = (event.value + ABS_translate) / ABS_scale
 					v_value_L = int(lerp(maxDown_L, maxUp_L, percentLv))
 					stickL.set_v(v_value_L)
 					# await controller_state.send()
 					await asyncio.sleep(0)
 				elif event.code == 0:
 					# horizontal L
-					percentLh = event.value/255
+					percentLh = (event.value + ABS_translate) / ABS_scale
 					h_value_L = int(lerp(maxRight_L, maxLeft_L, percentLh))
 					stickL.set_h(h_value_L)
 					# await controller_state.send()
 					await asyncio.sleep(0)
 				elif event.code == 4:
 					# vertical R
-					percentRv = event.value/255
+					percentRv = (event.value + ABS_translate) / ABS_scale
 					v_value_R = int(lerp(maxDown_R, maxUp_R, percentRv))
 					stickR.set_v(v_value_R)
 					# await controller_state.send()
 					await asyncio.sleep(0)
 				elif event.code == 3:
 					# horizontal R
-					percentRh = event.value/255
+					percentRh = (event.value + ABS_translate) / ABS_scale
 					h_value_R = int(lerp(maxRight_R, maxLeft_R, percentRh))
 					stickR.set_h(h_value_R)
+					# await controller_state.send()
+					await asyncio.sleep(0)
+				elif event.code == 2:
+					# xbox360 LT
+					if event.value > 0 and button_zl_pressed == False:
+						await button_push(controller_state, 'zl')
+						button_zl_pressed = True
+					elif event.value == 0 and button_zl_pressed == True :
+						await button_release(controller_state, 'zl')
+						button_zl_pressed = False
+					# await controller_state.send()
+					await asyncio.sleep(0)
+				elif event.code == 5:
+					# xbox360 RT
+					if event.value > 0 and button_zr_pressed == False:
+						await button_push(controller_state, 'zr')
+						button_zr_pressed = True
+					elif event.value == 0 and button_zr_pressed == True :
+						await button_release(controller_state, 'zr')
+						button_zr_pressed = False
 					# await controller_state.send()
 					await asyncio.sleep(0)
 				if d_pad=='ps4':
@@ -233,6 +297,7 @@ async def controller_inputs(controller_state):
 						elif event.value==0:
 							await button_release(controller_state, 'left')
 							await button_release(controller_state, 'right')
+	
 
 
 

@@ -32,6 +32,9 @@ for device in devices:
 	elif device.name.find('Xbox 360') != -1 :
 		controllerName = 'Xbox360_controller'
 		deviceID = device.path
+	elif device.name.find('Microsoft') != -1 :
+		controllerName = 'XboxOne_controller'
+		deviceID = device.path
 
 gamepad = InputDevice(deviceID)
 
@@ -47,7 +50,7 @@ if (controllerName == 'PS3_controller'):
 	down = 545
 	left = 546
 	right = 547
-	
+
 	d_pad = 999999
 
 	start = 315
@@ -124,10 +127,40 @@ elif (controllerName == 'Xbox360_controller'):
 	rBtn = 318
 
 	homeBtn = 316
-	
+
 	ABS_scale = 128*255*2
 	ABS_translate = 32768
 
+elif (controllerName == 'XboxOne_controller'):
+	print('xboxOne configuration loaded')
+	#button codes
+	aBtn = 304
+	bBtn = 305
+	xBtn = 308
+	yBtn = 307
+
+	up = 999999
+	down = 999999
+	left = 999999
+	right = 999999
+
+	d_pad = 'ps4'
+
+	start = 315
+	select = 314
+
+	l1Trig = 310
+	r1Trig = 311
+	l2Trig = 99999
+	r2Trig = 99999
+
+	lBtn = 317
+	rBtn = 318
+
+	homeBtn = 316
+
+	ABS_scale = 128*255*2
+	ABS_translate = 32768
 
 
 logger = logging.getLogger(__name__)
@@ -140,7 +173,7 @@ async def controller_inputs(controller_state):
 
 	button_zl_pressed = False
 	button_zr_pressed = False
-	
+
 
 	stickL = controller_state.l_stick_state
 	calibrationL = stickL.get_calibration()
@@ -297,7 +330,7 @@ async def controller_inputs(controller_state):
 						elif event.value==0:
 							await button_release(controller_state, 'left')
 							await button_release(controller_state, 'right')
-	
+
 
 
 

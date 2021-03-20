@@ -131,6 +131,7 @@ elif (controllerName == 'Xbox360_controller'):
 	ABS_scale = 128*255*2
 	ABS_translate = 32768
 
+#Xbox One Controller Support
 elif (controllerName == 'XboxOne_controller'):
 	print('xboxOne configuration loaded')
 	#button codes
